@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Turntable AISol — vertical train yards</title>
+<style>
+:root{color-scheme:dark;--bg:#080f1a;--panel:#121e2d;--line:#2b4158;--text:#eaf2fb;--muted:#92a8bd;--basal:#62b7ff;--apical:#ae9aff;--basket:#f6bb65;--chandelier:#ff777c;--accent:#51d7c0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 55% -10%,#1c3046 0,#0b1421 45%,var(--bg) 100%);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:18px 26px;border-bottom:1px solid #24344a;background:#0b1421d9;flex-wrap:wrap}
+.brand{display:flex;gap:13px;align-items:center}.logo{height:40px;width:40px;border:1px solid #4a7b93;border-radius:50%;display:grid;place-items:center;background:#1a3849;color:#baf5e8;font-size:24px}
+h1{font-size:18px;letter-spacing:.02em;margin:0;font-weight:720}header p{font-size:11px;color:var(--muted);margin:0}.status{font:600 11px ui-monospace,Consolas,monospace;color:var(--accent);letter-spacing:.06em}
+main{display:grid;grid-template-columns:255px minmax(480px,1fr) 280px;gap:16px;padding:17px;max-width:1720px;margin:auto}
+.panel{border:1px solid #2a3c53;border-radius:14px;background:linear-gradient(145deg,#142235 0,#101a28 100%);overflow:hidden;box-shadow:0 13px 34px #0002}
+.pad{padding:17px}.sectionTitle{font-size:10px;text-transform:uppercase;letter-spacing:.16em;font-weight:800;color:#9cb8ce;margin:0 0 12px}
+.buttonRow{display:flex;gap:7px;flex-wrap:wrap}.btn{cursor:pointer;padding:9px 12px;font-size:12px;font-weight:650;border:1px solid #3b536b;border-radius:8px;background:#1b3045;color:#eaf5ff}.btn:hover{border-color:#78b0d5;background:#27455e}.btn.primary{background:#176e6f;border-color:#27948b}.btn.primary:hover{background:#248c83}.btn[aria-pressed=true]{border-color:var(--accent);color:#b0fff0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #8bd4ff;outline-offset:2px}
+label{display:block;color:#b7c9dc;font-size:12px;margin:13px 0 4px}.sliderline{display:flex;justify-content:space-between}.num{font:12px ui-monospace,Consolas,monospace;color:#8ce5d9}
+input[type=range]{width:100%;accent-color:#5dcbbd;height:16px}.toggle{display:flex;gap:9px;align-items:center;margin:9px 0;color:#b7c9dc;font-size:12px}.toggle input{accent-color:#4bd3ba}
+select{padding:9px;width:100%;border:1px solid #3c5871;color:#eaf2fb;background:#1b3045;border-radius:8px;font-size:12px}
+.stage{position:relative;background:linear-gradient(180deg,#15273d,#101926);min-height:520px}canvas#yard{display:block;width:100%;height:530px;touch-action:manipulation;cursor:crosshair}
+.legend{display:flex;gap:13px;flex-wrap:wrap;padding:11px 15px;border-top:1px solid #294057;background:#0e1c2a}.tag{display:flex;gap:6px;align-items:center;font-size:11px;color:#aebfd1}.dot{height:7px;width:7px;border-radius:100%;display:inline-block}
+.stageTop{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #294057;padding:10px 15px;font:11px ui-monospace,Consolas,monospace;color:#b9ccdd;gap:8px;flex-wrap:wrap}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.metric{background:#0c1a29;border:1px solid #2b4054;border-radius:8px;text-align:center;padding:10px 6px}.metric strong{display:block;font:700 21px ui-monospace,Consolas,monospace;color:#ebf4ff}.metric span{color:#91a7bc;font-size:10px}
+.dataRow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #273a4d;font:12px ui-monospace,Consolas,monospace}.dataRow span{color:#92a8bd}.bar{width:100%;height:6px;border-radius:5px;background:#26364b;overflow:hidden;margin:4px 0 9px}.bar>div{height:100%;transition:width .08s;border-radius:5px}
+.small{font-size:11px;line-height:1.6;color:#91aabd}.matrix{display:grid;grid-template-columns:28px repeat(9,1fr);gap:3px;margin-top:10px;align-items:center}.matrix .cell{font:9px ui-monospace,Consolas,monospace;text-align:center;border-radius:3px;padding:3px 0}.matrix .mini{font-size:8px;color:#9bb0c5}
+#log{height:119px;overflow:auto;font:11px/1.7 ui-monospace,Consolas,monospace;color:#a3bad0;padding:6px 0}.logsp{color:var(--accent)}.logarr{color:#9ab8d5}
+footer{padding:18px 26px 24px;text-align:center;color:#88a0b5;font-size:11px}footer a{color:#8bd5e8}
+hr{border:0;border-top:1px solid #2a3c53;margin:17px 0}
+@media(max-width:1170px){main{grid-template-columns:240px minmax(360px,1fr)}.inspector{grid-column:1/-1}.inspector .pad{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}}
+@media(max-width:730px){main{display:block;padding:10px}.panel{margin-bottom:12px}.inspector .pad{display:block}canvas#yard{height:450px}header{padding:12px}}
+</style></head>
+<body><header><div class="brand"><div class="logo">◉</div><div><h1>Turntable AISol <span style="color:#7faec1;font-weight:400">/ the vertical yards</span></h1><p>Three layers · rotating gates · ascending trains · apical, basket &amp; chandelier control</p></div></div><div class="status" id="runstatus">● RUNNING / SIMULATED</div></header>
+<main><aside class="panel"><div class="pad"><div class="sectionTitle">Dispatch desk</div>
+<label for="preset">Traffic experiment</label><select id="preset"><option value="climb">01 — Climb the layers</option><option value="apical">02 — Apical top-down context</option><option value="basket">03 — Basket soma shunting</option><option value="chandelier">04 — Chandelier AIS veto</option><option value="all">05 — All nine yards</option></select>
+<div class="buttonRow" style="margin-top:12px"><button class="btn primary" id="play">Pause</button><button class="btn" id="step">Step</button><button class="btn" id="reset">Restart</button></div>
+<hr><div class="sectionTitle">Mechanisms / ablative controls</div>
+<label class="toggle"><input id="vertical" type="checkbox" checked> Vertical train routes</label>
+<label class="toggle"><input id="apical" type="checkbox" checked> Apical tuft gain</label>
+<label class="toggle"><input id="basket" type="checkbox" checked> Basket soma shunt</label>
+<label class="toggle"><input id="chandelier" type="checkbox" checked> Chandelier AIS veto</label>
+<hr><div class="sectionTitle">Physics knobs</div>
+<label for="gate"><div class="sliderline"><span>Angular selectivity κ</span><span class="num" id="gateValue">1.0</span></div></label><input id="gate" type="range" min="0" max="6" value="1" step="0.1">
+<label for="phase"><div class="sliderline"><span>Axon phase delay</span><span class="num" id="phaseValue">8 ticks</span></div></label><input id="phase" type="range" min="0" max="32" value="8" step="1">
+<label for="speed"><div class="sliderline"><span>Simulation speed</span><span class="num" id="speedValue">2 ticks/frame</span></div></label><input id="speed" type="range" min="1" max="6" value="2" step="1">
+<hr><div class="sectionTitle">Manual signalling</div>
+<p class="small">Click a yard to inject a <span style="color:var(--basal)">basal</span> train. Shift-click to deliver <span style="color:var(--apical)">apical</span> cars. Pick any yard to inspect its live soma and AIS state.</p><div class="buttonRow"><button class="btn" id="basketPulse">Basket → selected</button><button class="btn" id="chandPulse">Chandelier → selected</button></div>
+</div></aside>
+<section class="panel"><div class="stageTop"><span id="tick">TICK 0000</span><span>CLICK = BASAL · SHIFT+CLICK = APICAL</span><span id="pending">0 PACKETS IN TRANSIT</span></div>
+<div class="stage"><canvas id="yard"></canvas></div>
+<div class="legend"><span class="tag"><i class="dot" style="background:var(--basal)"></i>Basal / climbing</span><span class="tag"><i class="dot" style="background:var(--apical)"></i>Apical / descending</span><span class="tag"><i class="dot" style="background:var(--basket)"></i>Basket / soma</span><span class="tag"><i class="dot" style="background:var(--chandelier)"></i>Chandelier / AIS</span></div>
+<div style="padding:13px 16px;border-top:1px solid #24384d"><div class="sectionTitle">Sparse directed connection matrix · sender → receiver</div><div class="matrix" id="matrix"></div><p class="small" style="margin-bottom:0">Color indicates route type, not a signed linear weight. Shunt, veto and apical gain are nonlinear operations.</p></div>
+</section><aside class="panel inspector"><div class="pad"><section><div class="sectionTitle">Live state</div><div class="metrics"><div class="metric"><strong id="totalSpikes">0</strong><span>Departures</span></div><div class="metric"><strong id="upCount">0</strong><span>Upstairs</span></div><div class="metric"><strong id="downCount">0</strong><span>Downstairs</span></div></div><hr><div class="sectionTitle" id="selectedTitle">Selected / M1</div><div id="details"></div><p class="small">Apical raises gain only when basal charge is present. Basket reduces the soma state. Chandelier blocks the AIS gate without clearing the soma.</p></section>
+<section><hr><div class="sectionTitle">Station log</div><div id="log" aria-live="off"></div></section></div></aside></main>
+<footer>Deterministic computational toy, not a neuron simulation or trained AI. Source, equations, tests &amp; experimental controls: <a href="https://github.com/anttiluode/TurntableAISol">anttiluode/TurntableAISol</a>.</footer>
+<script src="yard_matrix.js"></script><script>
+(()=>{'use strict';const {defaultNetwork,schedulePreset,TAU}=TrainMatrix;
+const el=id=>document.getElementById(id), canvas=el('yard'), ctx=canvas.getContext('2d');
+const color={basal:'#62b7ff',apical:'#ae9aff',basket:'#f6bb65',chandelier:'#ff777c'};
+let net=defaultNetwork(),running=true,selected='M1',lastLogged=-1,frame=0,positions={};
+function setup(){const cfg={kappa:+el('gate').value,phaseOut:+el('phase').value,
+ enableVertical:el('vertical').checked,enableApical:el('apical').checked,
+ enableBasket:el('basket').checked,enableChandelier:el('chandelier').checked};
+ net=defaultNetwork(cfg);schedulePreset(net,el('preset').value); lastLogged=-1; draw();}
+function cssSize(){const rect=canvas.getBoundingClientRect();const w=Math.max(320,rect.width),h=rect.height||530;
+ const dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}return {w,h};}
+function layout(w,h){const small=w<500; const gap=Math.min(140,(w-100)/3); positions={};
+ for(const n of net.nodes){let x=w/2+(n.col-1)*gap +(n.layer===1?6:(n.layer===2?-9:0)),y=96+(2-n.layer)*(h-155)/2;
+ positions[n.id]={x,y};}return positions;}
+function line(x1,y1,x2,y2,tint,width=1,alpha=1,dashed=false){ctx.save();ctx.strokeStyle=tint;ctx.lineWidth=width;ctx.globalAlpha=alpha;ctx.setLineDash(dashed?[5,6]:[]);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();}
+function draw(){const {w,h}=cssSize();ctx.clearRect(0,0,w,h);layout(w,h);
+ ctx.fillStyle='#0d1b2a';ctx.fillRect(0,0,w,h);
+ ctx.save();ctx.strokeStyle='#234057';ctx.lineWidth=.55;for(let x=20;x<w;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}for(let y=16;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}ctx.restore();
+ for(let l=0;l<3;l++){const y=96+(2-l)*(h-155)/2;ctx.fillStyle='#13273caa';ctx.fillRect(8,y-48,w-16,96);ctx.strokeStyle='#294763';ctx.strokeRect(8,y-48,w-16,96);ctx.fillStyle='#85a5bb';ctx.font='700 10px ui-monospace, monospace';ctx.fillText(['01 · DENDRITE','02 · SOMA','03 · APICAL ROOF'][l],17,y-30);}
+ // Rails are directed with a small arrow at the receiver side.
+ for(const e of net.edges){const a=positions[e.from],b=positions[e.to],enabled=net.cfg.enableVertical||net.node(e.from).layer===net.node(e.to).layer;
+ if(!enabled||(!net.cfg.enableLateral&&net.node(e.from).layer===net.node(e.to).layer))continue;
+ const col=color[e.kind],side=(e.id%4-1.5)*5;let dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;const nx=-dy/len,ny=dx/len;
+ const x1=a.x+dx/len*32+nx*side,y1=a.y+dy/len*32+ny*side,x2=b.x-dx/len*32+nx*side,y2=b.y-dy/len*32+ny*side;
+ line(x1,y1,x2,y2,col,e.kind==='basal'?2:1.4,.29,e.kind!=='basal');
+ const ax=x2-dx/len*6,ay=y2-dy/len*6;line(ax+nx*4,ay+ny*4,x2,y2,col,1.5,.48);line(ax-nx*4,ay-ny*4,x2,y2,col,1.5,.48);
+ }
+ // Traveling packets: actual queue events move from their source toward their destination.
+ for(const p of net.queue){if(!positions[p.to])continue;const b=positions[p.to],a=positions[p.from]||{x:b.x-25,y:b.y+48};const dur=p.at-p.born||1;const f=Math.max(0,Math.min(1,(net.t-p.born)/dur));
+ const x=a.x+(b.x-a.x)*f,y=a.y+(b.y-a.y)*f;ctx.beginPath();ctx.fillStyle=color[p.kind];ctx.globalAlpha=.95;ctx.arc(x,y,p.kind==='basal'?4.2:3.5,0,TAU);ctx.fill();ctx.globalAlpha=1;}
+ for(const n of net.nodes){const p=positions[n.id],isSel=n.id===selected,flare=net.t-n.lastFire<8;
+ ctx.save();ctx.translate(p.x,p.y);
+ ctx.beginPath();ctx.arc(0,0,29,0,TAU);ctx.fillStyle=flare?'#175e64':'#182c41';ctx.fill();ctx.strokeStyle=isSel?'#dffcf5':flare?'#62eed5':'#527690';ctx.lineWidth=isSel?2.7:1.7;ctx.stroke();
+ ctx.beginPath();ctx.arc(0,0,21,-Math.PI/2,-Math.PI/2+TAU*Math.min(1,n.load/Math.max(0.01,net.cfg.threshold)));ctx.strokeStyle=color.basal;ctx.lineWidth=4;ctx.stroke();
+ ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(19*Math.cos(n.theta),19*Math.sin(n.theta));ctx.strokeStyle='#e0f5ff';ctx.lineWidth=2;ctx.stroke();
+ if(n.apical>.1){ctx.beginPath();ctx.arc(0,0,34,-Math.PI/2,-Math.PI/2+TAU*Math.min(1,n.apical));ctx.strokeStyle=color.apical;ctx.lineWidth=3;ctx.stroke();}
+ if(n.basket>.1){ctx.fillStyle=color.basket;ctx.fillRect(-24,31,48*Math.min(1,n.basket),3);}
+ if(n.chandelier>.1){ctx.fillStyle=color.chandelier;ctx.fillRect(-24,37,48*Math.min(1,n.chandelier),3);}
+ ctx.fillStyle='#e7f1fc';ctx.font='700 11px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(n.id,0,-37);ctx.font='10px ui-monospace,monospace';ctx.fillStyle='#8fb0c9';ctx.fillText(`${n.period}t · ${n.fired}↑`,0,51);ctx.restore();}
+ el('tick').textContent=`TICK ${String(net.t).padStart(5,'0')}`;el('pending').textContent=`${net.queue.length} PACKETS IN TRANSIT`;
+ el('totalSpikes').textContent=net.spikes.length;
+ const d=net.deliveries.filter(p=>p.from!=='stimulus');el('upCount').textContent=d.filter(p=>net.node(p.from).layer<net.node(p.to).layer).length;
+ el('downCount').textContent=d.filter(p=>net.node(p.from).layer>net.node(p.to).layer).length;
+ const n=net.node(selected);el('selectedTitle').textContent=`Selected / ${n.id}`;
+ const values=[['clock',`${n.period} ticks`,'#62b7ff',0],['soma load',n.load.toFixed(3),color.basal,n.load],['apical',n.apical.toFixed(3),color.apical,n.apical],['basket',n.basket.toFixed(3),color.basket,n.basket],['chandelier',n.chandelier.toFixed(3),color.chandelier,n.chandelier],['departures',String(n.fired),'#51d7c0',0]];
+ el('details').innerHTML=values.map(([label,value,col,v])=>`<div class="dataRow"><span>${label}</span><b>${value}</b></div>${v?`<div class="bar"><div style="width:${Math.min(100,v*70)}%;background:${col}"></div></div>`:''}`).join('');
+ let recent=net.spikes.slice(-8).reverse();el('log').innerHTML=recent.map(s=>`<div><span class="logarr">t${String(s.t).padStart(4,'0')}</span> <span class="logsp">${s.node}</span> depart τ=${s.tau}</div>`).join('')||'<div>Awaiting departure…</div>';
+}
+function makeMatrix(){const box=el('matrix');box.innerHTML='';const ids=net.nodes.map(n=>n.id);const cell=(txt,cls,col)=>{const d=document.createElement('div');d.className='cell '+(cls||'');d.textContent=txt;if(col){d.style.background=col+'37';d.style.color=col;}box.appendChild(d);};cell('','mini');ids.forEach(x=>cell(x,'mini'));ids.forEach(from=>{cell(from,'mini');ids.forEach(to=>{const e=net.edges.find(e=>e.from===from&&e.to===to);cell(e?'●':'·','',e?color[e.kind]:null);});});}
+function updateStatus(){el('runstatus').textContent=running?'● RUNNING / SIMULATED':'Ⅱ PAUSED / SIMULATED';el('runstatus').style.color=running?'#51d7c0':'#f6bb65';el('play').textContent=running?'Pause':'Run';}
+function reset(){setup();makeMatrix();}
+el('preset').addEventListener('change',reset);el('reset').addEventListener('click',reset);el('play').addEventListener('click',()=>{running=!running;updateStatus();});el('step').addEventListener('click',()=>{running=false;updateStatus();net.tick();draw();});
+for(const id of ['gate','phase'])el(id).addEventListener('input',()=>{if(id==='gate')el('gateValue').textContent=(+el(id).value).toFixed(1);else el('phaseValue').textContent=el(id).value+' ticks';net.cfg.kappa=+el('gate').value;net.cfg.phaseOut=+el('phase').value;});
+el('speed').addEventListener('input',()=>el('speedValue').textContent=el('speed').value+' ticks/frame');
+for(const id of ['vertical','apical','basket','chandelier'])el(id).addEventListener('change',()=>{const key={vertical:'enableVertical',apical:'enableApical',basket:'enableBasket',chandelier:'enableChandelier'}[id];net.cfg[key]=el(id).checked;});
+for(const [id,kind] of [['basketPulse','basket'],['chandPulse','chandelier']])el(id).addEventListener('click',()=>{net.inject(selected,kind,1.5);draw();});
+canvas.addEventListener('click',ev=>{const b=canvas.getBoundingClientRect(),x=ev.clientX-b.left,y=ev.clientY-b.top;let nearest=null,dist=Infinity;for(const [id,p] of Object.entries(positions)){let d=Math.hypot(p.x-x,p.y-y);if(d<dist){dist=d;nearest=id;}}if(dist<46){selected=nearest;net.inject(selected,ev.shiftKey?'apical':'basal',ev.shiftKey?1.5:3,net.node(selected).col);draw();}});
+function frameLoop(){frame++;if(running){for(let i=0;i<+el('speed').value;i++)net.tick();}draw();requestAnimationFrame(frameLoop);}
+reset();updateStatus();requestAnimationFrame(frameLoop);
+})();
+</script></body></html>
